@@ -80,7 +80,7 @@ export default function Sidebar() {
                   alt="Logo"
                   width={27}
                   height={27}
-                  className=" brightness-0"
+                  className=" brightness-0 dark:brightness-100"
                 />
                 <h1 className="font-extrabold text-2xl">FoodGenius</h1>
               </div>
@@ -88,12 +88,13 @@ export default function Sidebar() {
                 aria-label="Toggle Sidebar"
                 onPress={() => setIsSmall(true)}
                 isIconOnly
-                className=" bg-transparent hover:fill-neutral-500 transition-transform rotate-180"
+                className=" bg-transparent hover:fill-neutral-500 transition-transform rotate-180 brightness-0 dark:brightness-100"
               >
                 <svg
                   className="w-6 h-6"
                   viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg"
+                  fill="white"
                 >
                   <path d={DeviceButtons[0].d} />
                 </svg>

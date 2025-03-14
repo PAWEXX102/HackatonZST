@@ -157,9 +157,9 @@ export default function Home() {
       } pt-[5rem] lg:px-[2rem] px-[1rem] flex-row flex flex-wrap  w-full h-full z-[2] gap-5 `}
     >
       <div
-        className={`flex flex-col w-full md:w-[25rem] h-[25rem] bg-gray-200 rounded-2xl gap-5 px-4`}
+        className={`flex flex-col w-full md:w-[25rem] h-[25rem] bg-gray-200 rounded-2xl gap-5 px-4 dark:bg-zinc-500`}
       >
-        <div className="flex flex-row justify-between items-center mt-2">
+        <div className="flex flex-row justify-between items-center mt-2 dark:bg-zinc-500">
           <h1 className="text-start font-bold text-xl ">Ostatnie posiłki</h1>
           <div className="flex flex-row  items-center">
             <Button
@@ -179,7 +179,7 @@ export default function Home() {
             </Button>
           </div>
         </div>
-        <div className="w-full h-full flex flex-col gap-2 overflow-y-scroll">
+        <div className="w-full h-full flex flex-col gap-2 overflow-y-scroll dark:bg-zinc-500">
           {danie &&
             danie.map((obiad, index) => (
               <div key={index}>
@@ -244,17 +244,17 @@ export default function Home() {
         </ModalContent>
       </Modal>
 
-      <div className="w-[30rem] h-[25rem] bg-gray-200 rounded-2xl px-4">
-        <div className="flex flex-row justify-between items-center mt-2">
-          <h1 className="text-start font-bold text-xl ">Statystyki</h1>
+      <div className="w-[30rem] h-[25rem] bg-gray-200 rounded-2xl px-4 dark:bg-zinc-500 dark:text-white">
+        <div className="flex flex-row justify-between items-center mt-2 dark:text-white">
+          <h1 className="text-start font-bold text-xl dark:text-white">Statystyki</h1>
         </div>
-        <div className=" flex flex-col ">
+        <div className=" flex flex-col dark:text-white">
           <h3>Średnia kaloryczna ostatnich posiłków: 1700kcal</h3>
-          <h3 className="py-3">Spożyte wartości odżywcze:</h3>
-          <p className="text-sm">Tłuszcze:65</p>
-          <p className="text-sm">Białko:35g</p>
-          <p className="text-sm">Węglowodany:3g</p>
-          <div className="w-full h-full">
+          <h3 className="py-3 dark:text-white">Spożyte wartości odżywcze:</h3>
+          <p className="text-sm dark:text-white">Tłuszcze:65</p>
+          <p className="text-sm dark:text-white">Białko:35g</p>
+          <p className="text-sm dark:text-white">Węglowodany:3g</p>
+          <div className="w-full h-full dark:text-white">
             <Bar data={chartData} options={chartOptions} />
           </div>
         </div>

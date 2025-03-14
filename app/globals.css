@@ -2,26 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+::-webkit-scrollbar {
+  width: 0px; /* szerokość paska przewijania */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Zmienia wygląd tła paska przewijania */
+::-webkit-scrollbar-track {
+  background: #ffffff; /* kolor tła */
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+/* Zmienia wygląd suwaka paska przewijania */
+::-webkit-scrollbar-thumb {
+  background: #ffffff; /* kolor suwaka */
+  border-radius: 20px; /* zaokrąglenie rogu suwaka */
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+/* Zmienia wygląd suwaka paska przewijania podczas najechania kursorem */
+::-webkit-scrollbar-thumb:hover {
+  background: #555; /* kolor suwaka podczas najechania kursorem */
 }

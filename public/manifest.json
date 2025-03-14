@@ -1,0 +1,16 @@
+{
+  "name": "FoodGenius",
+  "short_name": "FoodGenius",
+  "theme_color": "#ffffff",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "orientation": "any",
+  "scope": "/",
+  "start_url": "/",
+  "form_factor": "wide",
+  "icons": [
+    { "src": "/logoczarne2.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "/logoczarne2.png", "type": "image/png", "sizes": "256x256" },
+    { "src": "/logoczarne2.png", "type": "image/png", "sizes": "512x512" }
+  ]
+}

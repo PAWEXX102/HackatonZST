@@ -1,101 +1,264 @@
+"use client";
+import React, { useEffect, useState, useRef } from "react";
+import { useScroll } from "./store/scroll";
+import { motion } from "framer-motion";
+import { useDeviceStore } from "./store/device";
+import { useSizeStore } from "./store/size";
+import { useProfileStore } from "./store/profile";
+import { Button } from "@heroui/button";
 import Image from "next/image";
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  useDisclosure,
+} from "@heroui/react";
+import { Input } from "@heroui/input";
+import { addDoc, collection, onSnapshot } from "firebase/firestore";
+import { db } from "@/services/firebase";
+import { Obiad } from "@/app/components/danie";
+import { Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const setScroll = useScroll((state) => state.setScroll);
+  const ref = useRef<HTMLDivElement>(null);
+  const isMobile = useDeviceStore((state) => state.isMobile);
+  const isSmall = useSizeStore((state) => state.isSmall);
+  const profileOpen = useProfileStore((state) => state.profileOpen);
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  interface Danie {
+    nazwa: string;
+    opis: string;
+    data?: any;
+    skladniki?: string;
+    przygotowanie?: string;
+    kcal?: string;
+  }
+
+  const [danie, setDanie] = useState<Danie[]>([]);
+  const [nazwaDania, setNazwaDania] = useState("");
+  const [skladnikiDania, setSkladnikiDania] = useState("");
+  const [przygotowanieDania, setPrzygotowanieDania] = useState("");
+  const [kalorieDania, setKalorieDania] = useState("");
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      collection(db, "obiady"),
+      (querySnapshot) => {
+        const danieArray: Danie[] = [];
+        querySnapshot.forEach((doc) => {
+          console.log(doc.id, " => ", doc.data());
+          danieArray.push({
+            ...(doc.data() as Danie),
+          });
+        });
+        setDanie(danieArray);
+        console.log(danieArray);
+      },
+      (error) => {
+        console.error("Error getting snapshot: ", error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+  console.log(danie);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (ref.current) {
+        setScroll(ref.current.scrollTop);
+        console.log(ref.current.scrollTop);
+      }
+    };
+
+    ref.current?.addEventListener("scroll", handleScroll);
+    handleScroll();
+
+    return () => {
+      ref.current?.removeEventListener("scroll", handleScroll);
+    };
+  }, [ref]);
+
+  const dodajDanie = async () => {
+    await addDoc(collection(db, "obiady"), {
+      nazwa: nazwaDania,
+      skladniki: skladnikiDania,
+      przygotowanie: przygotowanieDania,
+      kcal: kalorieDania,
+      data: new Date(),
+    });
+    onOpenChange();
+  };
+
+  const chartData = {
+    labels: danie.map((obiad) => obiad.nazwa),
+    datasets: [
+      {
+        label: "Kalorie",
+        data: danie.map((obiad) => obiad.kcal),
+        backgroundColor: "rgba(75, 192, 192, 0.2)",
+        borderColor: "rgba(75, 192, 192, 1)",
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: "top" as const,
+      },
+      title: {
+        display: true,
+        text: "Kalorie posiłków",
+      },
+    },
+  };
+  return (
+    <motion.div
+      ref={ref}
+      initial={{
+        opacity: 0,
+        scale: 1.1,
+        paddingLeft: isMobile || isSmall ? "2rem" : "22rem",
+      }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
+      animate={{
+        opacity: 1,
+        scale: 1,
+        paddingLeft: isMobile || isSmall ? "2rem" : "22rem",
+        paddingBottom: "5rem",
+      }}
+      className={` ${
+        profileOpen ? "overflow-hidden" : "overflow-y-auto"
+      } pt-[5rem] lg:px-[2rem] px-[1rem] flex-row flex flex-wrap  w-full h-full z-[2] gap-5 `}
+    >
+      <div
+        className={`flex flex-col w-full md:w-[25rem] h-[25rem] bg-gray-200 rounded-2xl gap-5 px-4`}
+      >
+        <div className="flex flex-row justify-between items-center mt-2">
+          <h1 className="text-start font-bold text-xl ">Ostatnie posiłki</h1>
+          <div className="flex flex-row  items-center">
+            <Button
+              isIconOnly
+              size="sm"
+              variant="ghost"
+              className="rounded-full border-none"
+              onPress={onOpen}
+            >
+              <Image
+                src={"/add.png"}
+                alt="Add"
+                width={40}
+                height={40}
+                className="p-2"
+              />
+            </Button>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        <div className="w-full h-full flex flex-col gap-2 overflow-y-scroll">
+          {danie &&
+            danie.map((obiad, index) => (
+              <div key={index}>
+                <Obiad
+                  nazwa={obiad?.nazwa || ""}
+                  kcal={obiad?.kcal || ""}
+                  data={obiad?.data}
+                  skladniki={obiad?.skladniki}
+                  przygotowanie={obiad?.przygotowanie}
+                />
+              </div>
+            ))}
+        </div>
+      </div>
+      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                Dodaj posiłek
+              </ModalHeader>
+              <ModalBody>
+                <Input
+                  label="Nazwa dania"
+                  labelPlacement="inside"
+                  type="text"
+                  variant={"faded"}
+                  onChange={(e) => setNazwaDania(e.target.value)}
+                />
+                <Input
+                  label="Ilość kalorii dania"
+                  labelPlacement="inside"
+                  type="text"
+                  variant={"faded"}
+                  onChange={(e) => setKalorieDania(e.target.value)}
+                />
+                <Input
+                  label="Składniki dania"
+                  labelPlacement="inside"
+                  type="text"
+                  variant={"faded"}
+                  onChange={(e) => setSkladnikiDania(e.target.value)}
+                />
+                <Input
+                  label="Sposób przygotowania"
+                  labelPlacement="inside"
+                  type="text"
+                  variant={"faded"}
+                  onChange={(e) => setPrzygotowanieDania(e.target.value)}
+                />
+              </ModalBody>
+              <ModalFooter>
+                <Button color="danger" variant="light" onPress={onClose}>
+                  Zamknij
+                </Button>
+                <Button color="primary" onPress={dodajDanie}>
+                  Dodaj
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+
+      <div className="w-[30rem] h-[25rem] bg-gray-200 rounded-2xl px-4">
+        <div className="flex flex-row justify-between items-center mt-2">
+          <h1 className="text-start font-bold text-xl ">Statystyki</h1>
+        </div>
+        <div className=" flex flex-col ">
+          <h3>Średnia kaloryczna ostatnich posiłków: 1700kcal</h3>
+          <h3 className="py-3">Spożyte wartości odżywcze:</h3>
+          <p className="text-sm">Tłuszcze:65</p>
+          <p className="text-sm">Białko:35g</p>
+          <p className="text-sm">Węglowodany:3g</p>
+          <div className="w-full h-full">
+            <Bar data={chartData} options={chartOptions} />
+          </div>
+        </div>
+      </div>
+    </motion.div>
   );
 }

@@ -10,6 +10,10 @@
 !.yarn/releases
 !.yarn/versions
 
+echo "service_key.json" >> .gitignore
+git add .gitignore
+git commit -m "Add service_key.json to .gitignore"
+
 # testing
 /coverage
 
